@@ -1,43 +1,31 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  // Cihaz Kimliği (DeviceId) veya benzersiz bir ID
-  // Kullanıcı silip yüklerse tanımak için mobilden unique bir ID (UUID) göndereceğiz.
   deviceId: { 
     type: String, 
     required: true, 
-    unique: true,
+    unique: true, 
     index: true 
   },
-
-  // Kişisel Kart Bilgileri
-  name: { 
-    type: String, 
-    trim: true,
-    default: 'Misafir Kullanıcı'
-  },
-  age: { 
-    type: Number 
-  },
-
-  // Uygulama Durumu
-  isPremium: { 
-    type: Boolean, 
-    default: false 
-  },
+  name: { type: String, trim: true },
+  age: { type: Number },
+  isPremium: { type: Boolean, default: false },
   
-  // Analitik Verisi: Ne zamandır kullanıyor?
-  // createdAt zaten var ama kullanıcı uygulamayı ilk açtığı tarihi mobilden de gönderebilir.
-  firstOpenDate: {
-    type: Date,
-    default: Date.now
+  email: { 
+    type: String, 
+    trim: true, 
+    lowercase: true,
+    unique: true, 
+    sparse: true 
   },
-
-  // Opsiyonel: Bildirim token'ı (İleride "Regl yaklaştı" bildirimi atmak istersen)
-  pushToken: {
-    type: String
-  }
-
-}, { timestamps: true }); // createdAt (Kayıt tarihi) ve updatedAt otomatik gelir
+  password: { 
+    type: String,
+    select: false 
+  },
+  pushToken: { type: String },
+  
+  firstOpenDate: { type: Date, default: Date.now },
+  lastSync: { type: Date, default: Date.now }
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
