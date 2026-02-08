@@ -4,17 +4,29 @@ exports.syncUser = async (req, res) => {
   try {
     const { deviceId, name, age, isPremium, pushToken } = req.body;
 
+    // 1. Gelen verilerin boş olup olmadığını kontrol edelim (Opsiyonel ama iyi olur)
+    if (!deviceId) {
+       return res.status(400).json({ status: "fail", message: "Device ID eksik!" });
+    }
+
     const user = await User.findOneAndUpdate(
       { deviceId: deviceId },
+      // DÜZELTME BURADA:
       {
-        name,
-        age,
-        isPremium,
-        pushToken,
-        lastSync: new Date(),
-        $setOnInsert: { firstOpenDate: new Date() },
+        // Mevcut alanları güncellemek için $set kullanmalısın
+        $set: {
+          name,
+          age,
+          isPremium,
+          pushToken,
+          lastSync: new Date(),
+        },
+        // Sadece ilk kayıtta çalışacak alan
+        $setOnInsert: { 
+          firstOpenDate: new Date() 
+        },
       },
-      { new: true, upsert: true },
+      { new: true, upsert: true }
     );
 
     res.status(200).json({
@@ -23,11 +35,11 @@ exports.syncUser = async (req, res) => {
       message: "Kullanıcı senkronize edildi.",
     });
   } catch (error) {
-    console.error("User Sync Error:", error);
-    res.status(500).json({ status: "error", message: "Sunucu hatası" });
+    // Render Loglarında gerçek hatayı görmek için burası çok önemli:
+    console.error("User Sync Error Detayı:", error); 
+    res.status(500).json({ status: "error", message: "Sunucu hatası: " + error.message });
   }
 };
-
 exports.register = async (req, res) => {
   try {
     const { deviceId, email, password } = req.body;
